@@ -1,0 +1,7 @@
+# Development and CI dependencies.
+#
+# Runtime dependencies live in requirements.txt; pytest is only needed to run
+# the test suite locally or in CI, so it is kept out of the runtime image.
+-r requirements.txt
+pytest>=8.0,<10.0
+ruff>=0.6,<1.0

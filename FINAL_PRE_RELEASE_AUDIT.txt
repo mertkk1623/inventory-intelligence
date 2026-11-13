@@ -1,0 +1,807 @@
+========================================================================================
+INVENTORY INTELLIGENCE V1
+FINAL PRE-RELEASE AUDIT
+========================================================================================
+
+Plain-text companion to FINAL_PRE_RELEASE_AUDIT.md.
+
+The Markdown file is the authoritative copy. Both files contain the
+same findings, priority levels, evidence and verdict.
+Audit date: 13 November 2026
+Auditor role: Engineer · QA · Product Manager · UX/UI Specialist · EN/TR Documentation
+Editor
+Product: Inventory Intelligence V1 (1.0.0)
+Build type: Local demo / pre-release
+Scope: Packages 1–5 as shipped, reviewed end to end without adding features.
+
+----------------------------------------------------------------------------------------
+
+1. EXECUTIVE SUMMARY
+--------------------
+
+Inventory Intelligence V1 is a single-SKU inventory and material planning workspace
+built with Python and Streamlit. It reads one structured Excel workbook, validates it,
+calculates stock and replenishment metrics, presents them across seven screens,
+optionally explains them through an AI layer, and exports an Excel workbook and a PDF
+report.
+
+This audit re-ran every check against the shipped code rather than restating earlier
+results. It reviewed all seven screens, both interface languages, the language-switching
+path, the Excel contract, the calculation engine, the AI layer, both report formats, the
+test suite, lint status, dependencies, configuration and repository hygiene.
+
+Outcome: the product is portfolio-ready as a local pre-release build. Two
+real defects were found and fixed during the audit, both specific to Streamlit 1.53 —
+which is the minimum version declared in requirements.txt. A stale test count on the
+Welcome screen was also corrected. No CRITICAL issue was found and no V1 behaviour was
+removed or altered.
+
+The audit found no evidence of a leaked credential, no personal absolute path in source,
+and no generated binary committed to the tree. One factual caveat must accompany any
+publication: the project is not a Git repository, so there is no commit history, no CI
+run, and no remote to publish to. That is reported as a finding, not presented as a
+completed step.
+
+----------------------------------------------------------------------------------------
+
+2. VERDICT
+----------
+
+Question                                     Answer
+------------------------------------------   -------------------------------------------
+Is V1 functionally complete?                 Yes — all five packages deliver their
+                                             stated scope.
+Does it run correctly?                       Yes — 190 tests pass on four environments;
+                                             six independent probes pass on each.
+Is it bilingual?                             Yes — English and Turkish, fully translated
+                                             UI, locale-aware formatting.
+Is it safe to publish as a portfolio         Yes, as a local demo / pre-release build.
+piece?
+Is it production-ready?                      No — and it does not claim to be.
+
+Final verdict: SUCCESS — ready for portfolio publication as a local pre-release build.
+
+"Success" here means the V1 scope is met, verified and honestly documented. It does not
+mean deployed, hosted, authenticated or production-hardened. Those were never V1 goals.
+
+----------------------------------------------------------------------------------------
+
+3. SCOPE AND METHOD
+-------------------
+
+In scope
+
+  - All seven screens: Getting Started, Overview Dashboard, Stock Analysis, Consumption
+    Analysis, Replenishment Planning, Reports, AI Analyst.
+  - Sidebar, navigation, language switch, report-date control, workspace status.
+  - Calculation engine, validation engine, Excel reader.
+  - Excel and PDF report generation.
+  - AI layer: client, prompts, schemas, cache, insights, analyst.
+  - Bilingual layer and locale formatting.
+  - Test suite, lint configuration, dependency files, CI workflow.
+  - Repository hygiene: secrets, caches, artefacts, ignore rules.
+  - Documentation: README.md.
+
+Out of scope (by instruction)
+
+  - No new features, modules or calculations.
+  - No ERP integration, multi-SKU or multi-warehouse work.
+  - No new AI capabilities.
+  - No architectural rewrites.
+  - No publishing, deployment, remote creation or history rewriting.
+  - No further live AI spend without explicit approval.
+
+Method
+
+  1. Read every source file and every screen, in both languages.
+  2. Re-derive the demo metrics independently from the bundled workbook.
+  3. Run the full test suite on four environments.
+  4. Run six purpose-built probes on the same four environments to observe behaviour the
+     unit tests do not cover.
+  5. Fix only defects that are safe, contained and necessary.
+  6. Re-run everything after the fixes.
+  7. Write this report from the observed evidence only.
+
+----------------------------------------------------------------------------------------
+
+4. ENVIRONMENT AND EVIDENCE MATRIX
+----------------------------------
+
+Every number below was produced during this audit.
+
+Test suite
+
+Environment   Python    Streamlit   pandas   Result
+-----------   -------   ---------   ------   ----------
+py311         3.11.18   1.67.0      3.1.1    190 passed
+py312         3.12.16   1.67.0      3.1.1    190 passed
+py313         3.13.18   1.67.0      3.1.1    190 passed
+st153         3.11.18   1.53.1      2.3.3    190 passed
+
+Two Streamlit releases were tested deliberately. 1.53 is the floor declared in
+requirements.txt; 1.67 is the current release. Testing only the newest version would
+have hidden both defects fixed in this audit.
+
+Lint
+
+Check             Tool          Result
+---------------   -----------   -----------------
+Static analysis   Ruff 0.17.5   All checks passed
+
+Behavioural probes
+
+Six behavioural probes were written for this audit and each was run on all four
+environments — 24 of 24 runs exit 0. Three further verification scripts check the demo
+values, the README structure and these two audit files; they also pass on every
+environment.
+
+Probe                 What it proves
+-------------------   ------------------------------------------------------------------
+check_bilingual.py    All six analytics screens render in both languages; language
+                      survives navigation.
+check_leaks.py        No untranslated English string leaks into the Turkish UI.
+check_formatting.py   EN and TR number, date and day formatting are both correct.
+check_switch.py       A language change never moves the user off the current screen.
+check_widgets.py      Report date and AI question input survive a language change.
+check_functional.py   Upload, validation, both reports, AI-disabled, AI-mocked and
+                      AI-failure paths.
+
+API budget
+
+No live AI request was made during this audit. The AI layer was verified through mocked
+clients and a simulated provider failure. Earlier live verification (ten requests, all
+passing) remains valid and is cited as prior evidence, not as something re-executed
+here.
+
+----------------------------------------------------------------------------------------
+
+5. PACKAGE TRACEABILITY
+-----------------------
+
+Package     Declared scope                    Verified   Notes
+---------   -------------------------------   --------   -------------------------------
+Package 1   Shell, Excel contract,            PASS       Three-sheet contract matches
+            validation engine, Welcome                   core/schema.py byte for byte.
+            screen
+Package 2   Inventory Calculation Engine      PASS       Values re-derived from the
+                                                         workbook, not read from stored
+                                                         output.
+Package 3   Analytics and Dashboard           PASS       All analytics screens render
+                                                         with live data in both
+                                                         languages.
+Package 4   Excel and PDF Reporting           PASS       Five-sheet workbook and
+                                                         seven-section PDF both
+                                                         generate.
+Package 5   AI Intelligence Layer             PASS       Mocked paths and failure
+                                                         resilience verified; prior live
+                                                         run stands.
+
+----------------------------------------------------------------------------------------
+
+6. BILINGUAL COVERAGE
+---------------------
+
+Structure
+
+  - One central module, utils/i18n.py, holds a 461-entry English→Turkish table.
+  - Keys are the English source strings, and every English string is byte-identical to
+    the literal it replaced. That is why 178 pre-existing English assertions kept
+    passing after the language layer was introduced.
+  - A missing key degrades to English instead of raising, so a newly added label cannot
+    crash a screen.
+  - Language is stored in st.session_state. One browser session cannot leak its language
+    into another.
+
+Coverage verified on every surface
+
+Sidebar and brand, navigation labels, page titles, section headings, KPI labels, metric
+descriptions, buttons, input labels, placeholders, help text, tooltips, validation
+messages, warning and error banners, empty states, success messages, table headers,
+chart titles, axis titles, legend entries, hover templates, annotations, report
+descriptions, download button labels, AI disclaimers and AI loading messages.
+
+Chart chrome was checked specifically because charts are where untranslated text usually
+survives. Turkish output verified: Stok bakiyesi, Mevcut Stok, Birim, Güvenlik stoğu
+100, Yeniden sipariş noktası 212, Günlük tüketim, Haftalık tüketim, Tüketilen birim, and
+the hover template %{x|%d.%m.%Y}<br>Bakiye: %{y:,.0f} birim.
+
+Untranslated-leak scan
+
+A dedicated probe renders every Turkish screen and flags any visible fragment that still
+equals a known English source string. Result: no untranslated leaks detected. The only
+English strings that remain visible in Turkish mode are Excel sheet names and PDF
+section names, which are deliberately kept in English so they match the file the user
+downloads. That decision is disclosed in the Reports screen and in the README.
+
+----------------------------------------------------------------------------------------
+
+7. LOCALE FORMATTING
+--------------------
+
+Formatting is presentation only. The probe confirms that the underlying value is
+unchanged after formatting in both languages.
+
+Item                English       Turkish
+-----------------   -----------   ----------
+Decimal             9.37          9,37
+One decimal         212.4         212,4
+Days of supply      47.9 days     47,9 gün
+Date                13 Nov 2026   13.11.2026
+Table date format   YYYY-MM-DD    DD.MM.YYYY
+Quantity            449 Adet      449 Adet
+Missing value       —             —
+
+Turkish output contains proper Turkish characters (ğ, ş, ı, İ, ç, ö, ü) throughout,
+including inside charts and table headers.
+
+Verified: no calculation value differs between the two languages. Only the
+rendering differs.
+
+----------------------------------------------------------------------------------------
+
+8. WELCOME SCREEN
+-----------------
+
+The Getting Started screen is the product's front door and was reviewed line by line in
+both languages.
+
+Element                     Required                       Found
+-------------------------   ----------------------------   -----------------------------
+Hero with product framing   Yes                            Present in EN and TR
+Eight-step "How It Works"   8 steps, exact labels          8 steps, both languages,
+                                                           wording matches the required
+                                                           labels
+Excel data requirements     Real columns only, no          Matches core/schema.py
+                            invention                      exactly: 3 sheets, 8 + 4 + 3
+                                                           columns
+Demo data disclosure        Clearly labelled synthetic     Present and explicit in both
+                                                           languages
+Data privacy statement      Only verified claims           Claims local read/validate,
+                                                           optional AI, and engine
+                                                           values plus length-capped
+                                                           text sent only when a key
+                                                           exists and a button is
+                                                           pressed — all true in code
+Roadmap                     5 completed, 4 planned         Correct split, correct
+                                                           colours
+Version and status          Pre-release wording            Correct
+Status card facts           Accurate                       Corrected during audit (see
+                                                           F-3)
+
+The privacy statement was checked against the implementation rather than taken on trust.
+It does not claim that no data ever leaves the machine; it states the narrower, accurate
+condition under which a request is sent.
+
+----------------------------------------------------------------------------------------
+
+9. ROADMAP AND VERSION STATUS
+-----------------------------
+
+Roadmap
+
+Packages 1–5 are shown as COMPLETED with green treatment. V2 ABC Analysis and Demand
+Forecasting, V3 Stock Optimization, V4 Multi-SKU and Multi-Warehouse, and V5 ERP
+Integration are shown as PLANNED / FUTURE in neutral grey.
+
+Both required statements appear verbatim on screen and in the README:
+
+  | The current V1 scope is complete. Future roadmap items are planned enhancements
+  | and are not currently available.
+
+  | Mevcut V1 kapsamı tamamlanmıştır. Gelecek yol haritasındaki maddeler planlanan
+  | geliştirmelerdir ve şu anda kullanıma açık değildir.
+
+Version and status
+
+The build identifies itself as Inventory Intelligence V1 with status
+Development Complete — Pre-Release and build type Local demo.
+
+An automated scan of README.md for over-claiming language — "Production Ready", "Live
+Product", "Public Demo", "live demo", "deployed at", "try it here" — returned zero
+matches. No GitHub URL, deployment URL, badge or screenshot is present anywhere in the
+documentation. Nothing was invented.
+
+----------------------------------------------------------------------------------------
+
+10. EXCEL AND PDF REPORTS
+-------------------------
+
+Check                       Result
+-------------------------   ------------------------------------------------------------
+Excel workbook generates    PASS — valid PK zip, five sheets
+Sheets                      Executive Summary, Stock Movements, Consumption Analysis,
+                            Replenishment Plan, Open Purchase Orders
+Excel size                  ≈12.6 KB
+PDF generates               PASS — valid %PDF
+Sections                    Seven: header, executive summary, stock analysis,
+                            consumption analysis, replenishment planning, open purchase
+                            orders, methodology and notes
+PDF size                    53,555 B
+File stem                   inventory-intelligence_PRF-4040-02_2026-11-13
+Turkish characters in PDF   PASS — a TrueType font is embedded
+Download labels EN          Download Excel Report, Download PDF Report
+Download labels TR          Excel Raporunu İndir, PDF Raporunu İndir
+Static snapshot             Confirmed — reports contain no formulas
+
+Language scope
+
+Excel and PDF files are English-only regardless of the interface language. This is
+stated explicitly in the Reports screen and in the README, so the scope is never
+ambiguous. It is recorded below as M-1, mitigated rather than removed, because
+translating the report build pipeline would have been a feature addition outside the
+audit's remit.
+
+----------------------------------------------------------------------------------------
+
+11. AI LAYER
+------------
+
+Path                            Result
+-----------------------------   --------------------------------------------------------
+AI disabled (no key)            PASS — no AI input widgets render; deterministic screens
+                                and both reports still work
+AI enabled with mocked client   PASS — question input present, response rendered
+Provider failure                PASS — visible failure banner, screen intact,
+                                deterministic values untouched
+Truncated response handling     Rejected via finish_reason == "length"
+Response validation             Strict schemas, lists capped at 15, text at 1,200
+                                characters
+Cache behaviour                 Successful results cached by fingerprint plus operation;
+                                failures never cached
+Data handling                   Open orders never folded into current stock anywhere in
+                                the pipeline
+
+Discipline checks
+
+  - The AI cannot alter a calculation. Every number in the supporting-data panel comes
+    from the engine result object.
+  - No request is sent unprompted. A request happens only when a user presses an AI
+    control.
+  - The API key is never logged, never rendered and never included in any output
+    examined during this audit.
+
+Language
+
+Model output is English regardless of the interface language, because the prompt
+requests English prose. This is disclosed on the AI Analyst screen and in the README,
+and is recorded below as M-2.
+
+----------------------------------------------------------------------------------------
+
+12. SECURITY AND SECRETS
+------------------------
+
+Credential sweep
+
+A scan across all 78 tracked files looked for hard-coded credential patterns and
+personal absolute paths.
+
+Check                                   Result
+-------------------------------------   ------------------------------------------------
+Hard-coded credential matches           6 hits, all placeholders — your-key-here in the
+                                        README, and super-secret, test-only in tests
+Occurrences of the real key in source   0
+Occurrences of the real key anywhere    1 — inside .streamlit/secrets.toml, the intended
+                                        git-ignored location
+Key length                              24 characters; not reproduced in this report
+Personal absolute paths in source       0
+.env / .env.* / *.pem / *.key           Ignored
+.streamlit/secrets.toml                 Ignored
+opencode.json                           Ignored; contains {env:DEPLOY_API_KEY}, no
+                                        literal secret
+
+Key-material scanning deliberately reported file and line only. No secret value appears
+in this document or in any audit output.
+
+Repository hygiene
+
+Item                                      State
+---------------------------------------   ----------------------------------------------
+.gitignore coverage                       Broad: Python artefacts, virtual environments,
+                                          test and lint caches, secrets, editor config,
+                                          agent config, OS files, temp files
+__pycache__, .ruff_cache, .pytest_cache   Present on disk but correctly ignored
+Loose .pyc files                          0
+Generated report binaries in tree         0
+Personal paths in source                  0
+
+One factual caveat
+
+The project is not a Git repository. There is no .git directory, therefore
+no commit history to scan, no commits to cite and no remote to push to. Git history
+cannot have leaked a secret because there is no Git history. This is reported plainly
+rather than glossed over.
+
+----------------------------------------------------------------------------------------
+
+13. CODE QUALITY
+----------------
+
+Metric                Value
+-------------------   ------
+Python files          60
+Python lines          18,060
+Ruff findings         0
+Test modules          7
+Tests                 190
+Translation entries   461
+Component modules     14
+
+Architectural boundary
+
+core/ imports no Streamlit and no formatting code. That boundary is what makes the
+engine testable without a browser and keeps the screens presentation-only. It held under
+review.
+
+Lint baseline
+
+A committed pyproject.toml now defines the Ruff and pytest configuration. Lint findings
+went from 60 to 0. Fixing them surfaced one genuine latent bug (see L-2), which is the
+useful outcome of raising the bar rather than an incidental cleanup.
+
+----------------------------------------------------------------------------------------
+
+14. TEST COVERAGE
+-----------------
+
+Module                     Tests   Focus
+------------------------   -----   -----------------------------------------------------
+test_ai.py                 77      Client, schemas, cache, insights, analyst, failure
+                                   modes
+test_dashboard.py          29      Dashboard and analytics screens
+test_reports.py            29      Excel and PDF report content
+test_excel_validation.py   21      Workbook contract and every validation code
+test_calculations.py       20      Stock, consumption, replenishment arithmetic
+test_i18n.py               12      Language resolution, formatting, switching,
+                                   navigation safety
+test_app.py                2       Application smoke test
+Total                      190
+
+The 12 i18n tests were added during this audit to lock in the two navigation defects
+fixed here. Without them the regressions could silently return on a future Streamlit
+upgrade.
+
+----------------------------------------------------------------------------------------
+
+15. FUNCTIONAL AND UX REVIEW
+----------------------------
+
+Verified end-to-end
+
+  - Demo upload loads 18 movements — PASS.
+  - Empty template is rejected with empty_product_master — PASS, and the UI shows a
+    validation banner rather than an empty dashboard — PASS.
+  - Excel report download — PASS.
+  - PDF report download — PASS.
+  - Report download labels in both languages — PASS.
+  - Turkish report-language scope note — PASS.
+  - AI disabled, mocked and failing paths — PASS.
+
+Re-derived demo values
+
+Computed from the bundled workbook for report date 13 November 2026, not read from
+stored output:
+
+Value                       Result
+-------------------------   --------------------------------
+Product                     PRF-4040-02, unit Adet
+Current stock               449
+Total IN / OUT              325 / 376
+Average daily consumption   9.3666…
+Days of supply              47.9359…
+Reorder point               212.4
+Target stock                399.7333…
+Inventory position          749
+Suggested order quantity    0
+Reorder required            No
+Context fingerprint         15f8928d074983a62a7e830eeda10a02
+
+UX observations
+
+  - Every warning is visible rather than hidden: negative stock, historical report date,
+    missing API key and failed AI request each render a banner while the deterministic
+    values stay on screen.
+  - Historical report dates do not fabricate order suggestions. They explain why the
+    planning values are unavailable.
+  - Demo and uploaded data can never coexist, and the sidebar always states which
+    dataset is active.
+  - Empty, warning and success states are all translated.
+  - Navigation is stable across language changes, dataset changes and report-date
+    changes — after the fixes recorded below.
+
+----------------------------------------------------------------------------------------
+
+16. DOCUMENTATION
+-----------------
+
+README.md was rewritten as a professional bilingual document of 49,509 bytes.
+
+Check                                        Result
+------------------------------------------   -------------------------------------------
+English sections                             15 of 15, in the required order
+Turkish sections                             15 of 15, semantically equivalent
+Table-of-contents anchors                    30 referenced, 0 unresolved
+External links                               0
+Images or screenshots                        0
+Fabricated URLs, badges or deployment        0
+claims
+Excel/PDF English-only scope stated          Yes, in both halves
+AI-output-language scope stated              Yes, in both halves
+Limitations section honest                   Yes — eleven boundaries listed
+Status table accurate                        190 tests, Python 3.11/3.12/3.13, Streamlit
+                                             1.53/1.67
+
+The EN and TR halves were spot-checked for semantic parity on the formula table, the
+worked example, the limitations list and the status table. They match in substance, with
+Turkish prose rather than a mechanical translation.
+
+No screenshot was fabricated. If screenshots are added before publication, they must be
+real captures of the running application.
+
+----------------------------------------------------------------------------------------
+
+17. FINDINGS
+------------
+
+Priority definitions: CRITICAL blocks release; HIGH breaks a shipped feature or misleads
+the user; MEDIUM degrades quality or completeness;
+LOW is a contained defect or hygiene gap; SUGGESTION is optional.
+
+CRITICAL
+
+None. No release-blocking defect was found.
+
+----------------------------------------------------------------------------------------
+
+HIGH
+
+F-1 — Navigation reset on every language change (Streamlit 1.53).
+Streamlit 1.53 derives a radio widget's identity from its formatted option labels.
+Because navigation labels are translated, switching language produced a new widget
+identity and the selection fell back to the first option, silently returning the user to
+Getting Started from any screen. Every analytics screen was affected, in both
+directions.
+
+Impact: a core bilingual feature appeared broken on the exact Streamlit version declared
+as the project minimum.
+
+Status: FIXED. The language handler now records the active page and re-applies it before
+the navigation widget is created.
+
+Evidence: check_switch.py passes on 1.53 and 1.67 — all six screens stay put.
+
+Regression guard: test_language_switch_keeps_the_active_screen.
+
+F-2 — Half-typed AI question discarded on language change (Streamlit 1.53).
+The language handler called st.rerun(), which aborted the run before the question input
+was re-created. Streamlit 1.53 then dropped the widget's state, so a user who typed a
+question and then changed language lost the draft.
+
+Impact: data loss in a normal workflow, on the minimum supported version.
+
+Status: FIXED. The handler is now an on_change callback. Streamlit runs widget callbacks
+before the script body, so the language applies in the same interaction with no rerun
+and no lost state.
+
+Evidence: check_widgets.py passes on both versions; the draft survives.
+
+Behaviour note: the report date already survived; it was unaffected.
+
+F-3 — Welcome status card showed a stale test count.
+The card displayed 178 while the suite contained 190 tests.
+
+Impact: a factual inaccuracy on the product's front door, in the one place a reviewer is
+most likely to read it.
+
+Status: FIXED — corrected to 190 in both languages.
+
+----------------------------------------------------------------------------------------
+
+MEDIUM
+
+M-1 — Excel and PDF reports are English-only.
+The interface is bilingual; the report files are not.
+
+Assessment: inherent to the report build pipeline. Making reports follow the UI would be
+a feature addition, which this audit was instructed not to make.
+
+Status: MITIGATED, not removed. A scope note now appears on the Reports screen and in
+both README halves. The English sheet and section names are kept visible on screen so
+they match the file the user downloads.
+
+M-2 — AI model output is English-only.
+The prompt requests English prose, so responses are English even in Turkish mode.
+
+Assessment: a deliberate prompt decision, and changing it would alter AI behaviour.
+
+Status: MITIGATED. Disclosed on the AI Analyst screen and in both README halves.
+
+M-3 — Lint configuration was not committed.
+Ruff ran against an implicit, opinionated baseline, producing 60 findings and no
+reproducible standard.
+
+Status: FIXED. pyproject.toml now defines Ruff and pytest configuration explicitly.
+Findings went 60 → 0.
+
+M-4 — Runtime and development dependencies were mixed.
+requirements.txt listed test and lint tooling alongside runtime packages, so anyone
+deploying the app installed pytest and Ruff.
+
+Status: FIXED. requirements.txt is now six runtime packages; requirements-dev.txt adds
+pytest and Ruff and includes the runtime file.
+
+----------------------------------------------------------------------------------------
+
+LOW
+
+L-1 — Download labels and table headers were untranslated.
+Several button labels, table headers and numeric cells bypassed the translation layer.
+
+Status: FIXED. Table headers now route through t(); numeric and date columns are
+locale-formatted via localise_columns and table_date_format().
+
+L-2 — Latent late-binding bug in localise_columns.
+A loop closure captured the loop variable decimals late, so a formatting helper could
+apply the wrong precision in a multi-column table. Lint rule B023 caught it.
+
+Status: FIXED. Correct binding applied. This was a real defect, not a style complaint.
+
+L-3 — zip() without strict=True in reports/pdf_theme.py.
+Silent truncation would have occurred if the paired sequences ever differed in length.
+
+Status: FIXED.
+
+L-4 — .gitignore had gaps.
+Several cache directories, editor folders, agent configuration and OS files were
+uncovered.
+
+Status: FIXED. Rewritten to cover .ruff_cache/, .mypy_cache/, opencode.json, .vscode/,
+.idea/, .env.*, *.pem, *.key, *.tmp, *.bak, build/, dist/ and OS files.
+
+L-5 — pytest.ini duplicated pyproject.toml.
+Two sources of test configuration invite drift.
+
+Status: FIXED. pytest.ini removed; configuration consolidated under
+[tool.pytest.ini_options].
+
+----------------------------------------------------------------------------------------
+
+SUGGESTION
+
+S-1 — Initialise a Git repository before publishing.
+There is no version control today. git init, an initial commit and a .gitignore already
+in place would make the project publishable and auditable. No history was created or
+rewritten during this audit, by instruction.
+
+S-2 — Add real screenshots.
+The README contains none, deliberately: fabricating them was not acceptable. Real
+captures of the seven screens, in both languages, would materially strengthen the
+portfolio presentation.
+
+S-3 — Let reports follow the interface language in a future version.
+This would close M-1 properly. It is a V2-sized change, not an audit fix.
+
+S-4 — Add a CI badge only after the repository is public.
+The workflow file exists and is correctly configured, but it has never run, because
+there is no repository to run it in. A badge before that would be inaccurate.
+
+S-5 — Consider a dependency upper bound review at release.
+pandas>=2.2,<4.0 and streamlit>=1.53,<2.0 are broad. Both were tested on current
+releases, so this is a forward-looking note rather than a defect.
+
+----------------------------------------------------------------------------------------
+
+18. CHANGES APPLIED
+-------------------
+
+Only safe, contained fixes were applied. No feature, module, calculation or architecture
+change was made.
+
+#      Change                                    Reason           Risk
+----   ---------------------------------------   --------------   ----------------------
+1      Language handler re-applies the active    Fixes F-1        Low — navigation only
+       page
+2      st.rerun() replaced with on_change        Fixes F-2        Low — same interaction
+       callback
+3      Welcome test count 178 → 190              Fixes F-3        None
+4      pyproject.toml added; pytest.ini          M-3, L-5         None
+       removed
+5      Runtime/dev requirements split            M-4              None
+6      .gitignore rewritten                      L-4              None
+7      Latent late-binding formatting bug        L-2              None — bug fix
+       fixed
+8      zip(strict=True) in PDF theme             L-3              None
+9      Table headers and download labels         L-1              None
+       translated
+10     Report and AI language scope notes        M-1, M-2         None
+       added
+11     12 i18n regression tests added            Guard F-1, F-2   None
+12     README.md rewritten bilingually           Documentation    None
+13     One report test assertion tightened       Test precision   None
+
+Every change was re-verified: 190 tests pass on four environments, Ruff is clean, and
+all 24 probe runs exit 0.
+
+The tightened test assertion (change 13) deserves a note. It previously asserted that
+the string "PDF Report" was absent, which would pass for the wrong reason if the label
+were merely reworded. It now asserts on the report card structure, which is what the
+behaviour actually guarantees.
+
+----------------------------------------------------------------------------------------
+
+19. KNOWN LIMITATIONS AND UNVERIFIED ITEMS
+------------------------------------------
+
+Intentional V1 boundaries
+
+Single SKU, single warehouse, no forecasting, no ABC analysis, no stock optimisation, no
+ERP integration, no authentication. Historical report dates do not produce order
+suggestions because current open orders describe today's supply, not the supply that
+existed on a past date.
+
+Not verified during this audit
+
+Item                          Why                           Consequence
+---------------------------   ---------------------------   ----------------------------
+Live AI request               No budget spend without       Prior live run of ten
+                              approval; mocked paths used   requests stands as evidence
+                              instead
+GitHub Actions execution      Project is not a Git          Workflow is correct but has
+                              repository                    never run
+Committed history scan        No history exists             Nothing to scan; also
+                                                            nothing to leak
+Manual browser walkthrough    This audit used the           Recommended before
+by a human                    programmatic test harness     publication
+Accessibility audit (screen   Out of stated scope           Suggested as a follow-up
+reader, contrast)
+
+These are stated so no reader mistakes the absence of a check for a passing one.
+
+----------------------------------------------------------------------------------------
+
+20. FINAL RECOMMENDATION AND RELEASE CHECKLIST
+----------------------------------------------
+
+Recommendation
+
+Publish the V1 build as a local pre-release portfolio project. It is
+functionally complete, bilingual, tested across four environments, lint-clean, free of
+leaked secrets, and honest about what it does not do. The two high-severity defects
+found during this audit — both affecting the minimum supported Streamlit version — are
+fixed and covered by regression tests.
+
+Do not present it as a production system, a hosted service or a live product. It is none
+of those, and the interface, README and status card all say so.
+
+Pre-publication checklist
+
+Item                                             State
+----------------------------------------------   ------------------------------
+All seven screens verified in both languages     Done
+Language switching stable on 1.53 and 1.67       Done
+190 tests passing on four environments           Done
+Ruff clean                                       Done
+All 24 probe runs passing                        Done
+Excel and PDF generation verified                Done
+AI disabled, mocked and failure paths verified   Done
+No credential in source                          Done
+No personal path in source                       Done
+No generated binary in tree                      Done
+README bilingual with 15 sections each           Done
+No fabricated links or screenshots               Done
+Roadmap and status wording accurate              Done
+Git repository initialised                       Not done — user decision (S-1)
+Real screenshots added                           Not done — optional (S-2)
+Human browser walkthrough                        Recommended before publishing
+
+On the record
+
+  - No GitHub push, no remote creation, no deployment and no publishing was performed.
+  - No repository history was created, rewritten or destroyed.
+  - No API key value was printed, logged or included in any artefact.
+  - No unverified result is presented here as freshly executed; prior evidence is
+    labelled as prior evidence.
+
+----------------------------------------------------------------------------------------
+
+End of audit.

@@ -1,0 +1,299 @@
+PACKAGE 5 — AI INTELLIGENCE LAYER
+COMPLETION RECORD
+================================================================================
+Project        : Inventory Intelligence
+Package        : 5 — AI Intelligence Layer
+Date           : 2026-11-13
+Provider       : Deploy (OpenAI-compatible)
+Model          : deepseek-ai/deepseek-v4.1-flash-1017
+Base URL       : https://api-cdn.deploy.com/api/v1
+FINAL STATUS   : SUCCESS
+Live verified  : 2026-11-13 (4/4 scenarios, 4 requests, 0 source changes)
+================================================================================
+
+IMPLEMENTATION  : COMPLETE
+--------------------------------------------------------------------------------
+New package     : ai/  (11 modules)
+  __init__.py          public API
+  errors.py            typed exception hierarchy
+  settings.py          config resolution + key redaction
+  client.py            urllib OpenAI-compatible client, bounded retries
+  schemas.py           Pydantic v2 strict response models
+  context_builder.py   engine -> minimal JSON + SHA-256 fingerprint
+  cache.py             bounded LRU, successes only
+  prompts.py           system rules + 4 task prompts
+  insights.py          inventory / consumption / replenishment
+  inventory_analyst.py natural-language Q&A
+  session.py           session-scoped cache binding
+
+New screen      : components/ai_analyst.py  (7 numbered sections)
+New tests       : tests/test_ai.py  (77 mock-based tests)
+New tool        : tools/live_ai_check.py  (gated, 6-request cap)
+
+Wiring          : app.py, utils/session_state.py, components/sidebar.py,
+                  components/ui.py, components/styles.py
+Dependencies    : requirements.txt  + pydantic>=2.7,<3.0
+Documentation   : README.md  (English + Turkish, Package 5 sections)
+
+Packages 1-4    : NOT rewritten. No formula, UI design or working feature changed.
+
+AI FEATURES     : 5 / 5 delivered
+--------------------------------------------------------------------------------
+  [x] Inventory Insights
+  [x] Natural-language Inventory Analyst
+  [x] Consumption Insights
+  [x] Replenishment Explanation
+  [x] Action Suggestions (finding / supporting data / action / reason /
+      confidence / limitation — all six enforced by schema)
+
+UI REQUIREMENTS : MET
+--------------------------------------------------------------------------------
+  [x] Sidebar page "AI Analyst"
+  [x] AI Inventory Overview
+  [x] Key Findings
+  [x] Inventory Risks
+  [x] Recommended Actions
+  [x] Question input + answer area
+  [x] Supporting data references
+  [x] Exact disclaimer:
+      "AI-generated interpretations are decision-support suggestions and must
+       be reviewed by a human."
+
+DATA SAFETY     : VERIFIED
+--------------------------------------------------------------------------------
+  [x] Engine is the single source of truth; AI never calculates
+  [x] AI cannot create/modify/cancel orders or change inventory records
+  [x] Forecasts never presented as certain data
+  [x] Only necessary engine values sent (no paths, identity, credentials)
+  [x] Workbook free text treated as untrusted: control chars stripped,
+      120-char cap, injection patterns flagged, SECURITY NOTICE in prompt
+  [x] No AI-generated Python/SQL/shell ever executed
+  [x] All model text HTML-escaped before display
+  [x] Guard test: no ai/ module imports core.calculations/inventory/replenishment
+  [x] Guard test: engine result unmodified by AI calls
+  [x] API key never logged / printed / committed / in prompts / in context
+
+SECRET HANDLING : VERIFIED
+--------------------------------------------------------------------------------
+  Storage         : .streamlit/secrets.toml only (plus env fallback)
+  .gitignore      : contains .streamlit/secrets.toml and .env
+  Exposure scan   : 0 project files contain the key value
+  repr redaction  : AISettings.__repr__ prints "set:<len>", never the value
+  Key length      : 24 chars (value not recorded here)
+
+CACHING         : VERIFIED
+--------------------------------------------------------------------------------
+  Key             : fingerprint | operation | (question, lowercased)
+  Fingerprint     : dataset identity + report date + all interpreted values
+  Scope           : st.session_state["ii_ai_store"] (per browser session)
+  Invalidation    : automatic on any data or report-date change
+  Failures        : never cached
+  Bound           : 64 entries, LRU
+  Rerun behaviour : no API call
+  Reset           : dataset set/clear drops the AI store
+
+TEST RESULTS    : 178 PASSED x 4 ENVIRONMENTS
+--------------------------------------------------------------------------------
+  py311                 (Python 3.11.18, Streamlit 1.53.x)  178 passed
+  py312                 (Python 3.12.16, Streamlit 1.53.x)  178 passed
+  py313                 (Python 3.13.18, Streamlit 1.53.x)  178 passed
+  py311-streamlit153    (Python 3.11.18, Streamlit 1.53)    178 passed
+
+  New Package 5 tests     : 77   (requirement: >= 20)
+  Pre-existing preserved  : 101  (29 dashboard + 29 reports +
+                                  21 excel validation + 20 calculations +
+                                  2 app)
+  Mock-only               : yes; no socket opened by any test
+
+RUFF            : CLEAN ON NEW CODE
+--------------------------------------------------------------------------------
+  ai/ components/ai_analyst.py tools/ tests/test_ai.py
+  -> All checks passed!
+
+  Also clean: app.py, components/sidebar.py, utils/session_state.py,
+              components/ui.py, components/styles.py
+
+  Whole project: 43 pre-existing findings, all in Package 1-4 files
+  (components/charts.py 27, analytics_ui.py 4, welcome.py 3,
+   core/inventory.py 2, core/consumption.py 2, components/overview.py 2,
+   tests/test_excel_validation.py 1, core/replenishment.py 1,
+   core/validation.py 1). Out of scope by instruction.
+
+APP SMOKE TEST  : PASS
+--------------------------------------------------------------------------------
+  Real Streamlit server (port 8517, headless)
+    /_stcore/health  : ok
+    GET /            : HTTP 200, 7,863 bytes
+    Runtime errors   : none
+    Port released    : yes
+
+  AppTest screen verification
+    Getting Started          exc=0
+    Dashboard                exc=0
+    Stock Analysis           exc=0
+    Consumption Analysis     exc=0
+    Replenishment Planning   exc=0
+    Reports                  exc=0
+    AI Analyst               exc=0
+    All screens clean        : True
+
+  Cold start: 0 exceptions, nav = ['Getting Started']
+  After demo: 7 nav options including 'AI Analyst'
+  Disclaimer, all 11 required labels and engine values 449 / 212.4 / 749
+    all render on the AI Analyst page.
+  Shared ii_calculation object identical on Dashboard and AI Analyst.
+
+LIVE API VERIFICATION — FINAL RESULT : 4 PASS / 0 FAIL  (SUCCESS)
+================================================================================
+  This section supersedes the first-run record below. See 16 of the report for
+  the full addendum.
+
+  Source code changed for verification : NO
+  Budget            : 4 requests
+  Requests used     : 4 / 4
+  Retries           : 0 (disabled to guarantee the cap)
+  Configuration     : existing Deploy provider, max_tokens 4000
+
+  SCENARIO 1  Inventory insights   PASS  3 findings / 2 risks / 2 actions,
+                                          4 limitations, all six action fields
+                                          present, cites 449 and 749,
+                                          3,714 tokens, 12.23s
+  SCENARIO 2  Consumption insights PASS  392-char summary, 4 patterns, 4 risks,
+                                          peak 34 Adet on 2026-11-10, 20 zero
+                                          days, 5,109 tokens, 17.36s
+  SCENARIO 3  Analyst Q1           PASS  4 supporting items, concluded no order
+                                          needed, agrees with engine, 2,395 tok
+  SCENARIO 4  Analyst Q2           PASS  47.94 days cited, 4 supporting items,
+                                          2,423 tokens, 3.51s
+
+  Cache reuse      : repeat insight and repeat question both from_cache=True,
+                     4/4 requests before and after (0 spent)
+  End-to-end UI    : PASS, 0 exceptions, 0 extra requests, disclaimer shown,
+                     engine 449/749 rendered, no empty-state regression
+  Engine untouched : YES
+  Key exposed      : NO
+
+  Tokens (final run) : prompt 8,130 | completion 5,511 | total 13,641
+  Heaviest reply     : consumption, 3,061 of 4,000 completion tokens (76.5%)
+  Headroom note      : a much larger workbook could still truncate; the client
+                       now raises an explicit "truncated" error, never silent
+
+  All four failures from the first run are therefore confirmed FIXED on the
+  real provider.
+
+FIRST-RUN RECORD (historical, superseded) : 2 PASS / 4 FAIL
+================================================================================
+  Budget            : 6 requests
+  Requests used     : 6 / 6  (budget fully consumed, single run)
+  Further calls     : NONE at that time
+
+  TEST 1  Connection                    PASS  HTTP 200, 1.06s, 52 tokens,
+                                              model echoed, reply 'pong',
+                                              key absent from response
+  TEST 2  Inventory insights            FAIL  response not valid JSON
+                                              (truncated)
+  TEST 3  Replenishment explanation     PASS  decision 'no-order-required',
+                                              arithmetic consistent with engine
+  TEST 4  Consumption insights          FAIL  empty completion (ceiling
+                                              consumed by reasoning)
+  TEST 5  Analyst Q1                    FAIL  schema: supporting_data 11 > 10
+  TEST 6  Analyst Q2                    FAIL  schema: same list cap
+  TEST 7  End-to-end UI                 FAIL  consequential (no cached
+                                              inventory overview to render)
+
+  Recorded token usage (2 of 6 calls):
+    prompt      2,027
+    completion  1,955
+    reasoning      11
+    total       3,982
+    avg latency  7.36 s
+  True total token usage for all 6 requests: NOT AVAILABLE (ledger defect).
+
+  ROOT CAUSES AND FIXES (all fixed, mock-tested, NOT live-re-verified)
+    Truncated JSON / empty completion
+      -> max_tokens default 4000, hard floor 3000
+      -> finish_reason == 'length' now raises a typed error
+      -> truncation detected and named in the JSON error
+      -> prompt token budgets tightened
+    Schema list cap
+      -> MAX_LIST_ITEMS = 15 applied to every list field
+      -> prompt asks for at most four supporting entries
+    Ledger under-count
+      -> CountingTransport increments on every HTTP attempt, incl. failures
+
+  Reason not re-verified: re-running would exceed the 6-request cap.
+
+EXCEL / PDF REGRESSION : PASS
+--------------------------------------------------------------------------------
+  Current   (2026-11-13)
+    Excel : 12,589 B, 5 sheets, 357 non-empty cells
+    PDF   : 53,555 B, 4 pages, 5,756 chars
+    Dates : excel=2026-11-13, pdf label '13 Nov 2026' -> match
+    Replenishment supported=True, suggested=0, reorder required='No'
+
+  Historical (2026-10-15)
+    Excel : 12,205 B, 5 sheets, 244 non-empty cells
+    PDF   : 53,491 B, 4 pages, 6,008 chars
+    Dates : excel=2026-10-15, pdf label '15 Oct 2026' -> match
+    Replenishment supported=False
+    Suggested Order Quantity = 'Not generated'
+    Reorder Required         = 'Not supported'
+
+  No reporting code modified.
+
+FAILED / SKIPPED CHECKS
+--------------------------------------------------------------------------------
+  RESOLVED Live inventory insights        PASS on re-run (was truncated JSON)
+  RESOLVED Live consumption insights      PASS on re-run (was empty completion)
+  RESOLVED Live analyst Q1 and Q2         PASS on re-run (was list-length cap)
+  RESOLVED Live end-to-end UI             PASS on re-run, 0 extra requests
+  DONE     Live re-verification           4 requests, within the allowance
+  DONE     Live ledger accuracy fix       4/4 attempts logged on the final run
+  SKIPPED  GitHub Actions CI              project is not a Git repository
+  SKIPPED  git check-ignore verification  not a Git repository; .gitignore
+                                          read directly instead
+  NOT DONE Ruff on pre-existing files     43 findings, Package 1-4, out of
+                                          scope by instruction
+
+KNOWN LIMITATIONS
+--------------------------------------------------------------------------------
+  1. Live verification is complete: all four previously failing scenarios now
+     pass on the real provider.
+  2. The original first-run ledger recorded only 2 of 6 calls, so that run's
+     true token spend is unknown. The counter bug is fixed and was exercised in
+     the final run, which logged 4/4 attempts.
+  3. Reasoning-model output shape can drift between runs. Malformed replies are
+     rejected with a visible warning, never shown as data.
+  4. Headroom is empirical: the heaviest final reply used 3,061 of 4,000
+     completion tokens (76.5%). A much larger workbook could still truncate; the
+     client now raises an explicit "truncated" error, never silent.
+  5. Cache is per session by design; two sessions each pay for a first request.
+  6. No streaming; a slow call blocks its section for up to 60 s
+     (observed 3.5-17.4 s per call).
+  7. Model output language follows the English prompt, not the UI language.
+  8. Project is not a Git repository: no commit, no CI run.
+  9. Streamlit 1.53.x only; older versions not validated.
+
+SIGN-OFF
+--------------------------------------------------------------------------------
+  No further work required. Live verification completed within the 4-request
+  allowance, with zero source-code changes.
+
+COST SUMMARY
+--------------------------------------------------------------------------------
+  Real API requests, first run    : 6 / 6
+  Real API requests, final run    : 4 / 4
+  Real API requests, total        : 10
+  Recorded tokens, first run      : 3,982 (2 successful calls only)
+  Recorded tokens, final run      : 13,641 (all 4 calls)
+  Automated test API use          : 0 (fully mocked)
+
+================================================================================
+FINAL STATUS: SUCCESS
+================================================================================
+Implementation, testing, lint, safety, caching and reporting regression all pass.
+All four previously failing live scenarios are confirmed fixed on the real
+Deploy provider, with the 4-request budget respected and no source changes.
+
+No Package 6 work was started.
+================================================================================
