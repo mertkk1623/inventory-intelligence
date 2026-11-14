@@ -331,3 +331,54 @@ def test_language_sync_prefers_st_iframe_when_available(monkeypatch):
     html, kwargs = rendered[0]
     assert "documentElement" in html
     assert kwargs["height"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Brand and machine text must not follow Turkish casing
+# ---------------------------------------------------------------------------
+
+
+def test_brand_tagline_keeps_latin_casing_in_turkish():
+    """``Stock & Material Planning`` is a brand and is never translated.
+
+    The sidebar tagline sits inside ``.ii-brand-sub``, which is upper-cased by
+    CSS. Once ``<html lang="tr">`` is set, an untagged English string would be
+    rendered as ``MATERİAL PLANNİNG``. The element therefore pins ``lang="en"``.
+    """
+
+    app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+    _switch_language(app, "Türkçe")
+
+    assert not list(app.exception)
+    markup = _markdown(app)
+    assert 'class="ii-brand-sub" lang="en"' in markup
+
+
+def test_hero_eyebrow_keeps_latin_casing_in_turkish():
+    """``Inventory Intelligence · V1`` is a brand line, not translated copy."""
+
+    app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+    _switch_language(app, "Türkçe")
+
+    assert not list(app.exception)
+    markup = _markdown(app)
+    assert 'class="ii-eyebrow" lang="en"' in markup
+
+
+def test_workbook_filename_is_never_turkish_cased(demo_dataset):
+    """The filename is machine data; upper-casing it must not alter it.
+
+    ``inventory-intelligence-demo-….xlsx`` used to be rendered as
+    ``İNVENTORY-İNTELLİGENCE-…`` because the page eyebrow is upper-cased and
+    inherited the Turkish document language.
+    """
+
+    app = _open_on("Dashboard", demo_dataset)
+    assert not list(app.exception)
+    _switch_language(app, "Türkçe")
+
+    assert not list(app.exception)
+    markup = _markdown(app)
+    assert '<span lang="en">' in markup
+    assert demo_dataset.filename in markup
+

@@ -350,7 +350,9 @@ def _hero_html() -> str:
     return (
         '<div class="ii-hero">'
         '<div class="ii-hero-copy">'
-        '<div class="ii-eyebrow"><span class="dot"></span>'
+        # The product name is a brand and is never translated, so the eyebrow
+        # keeps Latin casing rules while the rest of the page may be Turkish.
+        '<div class="ii-eyebrow" lang="en"><span class="dot"></span>'
         f"{escape(t('Inventory Intelligence · V1'))}</div>"
         f"<h1>{escape(t('Inventory Intelligence'))}</h1>"
         f'<p class="ii-hero-sub">{escape(t("AI-powered inventory analytics and replenishment decision support."))}</p>'

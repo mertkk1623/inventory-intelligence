@@ -80,7 +80,10 @@ def page_header(
         '<div class="ii-page-head">'
         "<div>"
         '<div class="ii-page-eyebrow">'
-        f"{escape(t('Data Overview'))} · {escape(dataset.filename)}</div>"
+        f"{escape(t('Data Overview'))} · "
+        # The filename is machine data, not UI copy: it must never be
+        # Turkish-cased by ``text-transform: uppercase``.
+        f'<span lang="en">{escape(dataset.filename)}</span></div>'
         f'<h1 class="ii-page-title">{escape(title)}</h1>'
         f'<p class="ii-page-sub">{escape(subtitle)}</p>'
         f"{as_of_html}"

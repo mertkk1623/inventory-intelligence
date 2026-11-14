@@ -206,7 +206,11 @@ def _brand_html() -> str:
         f'<div class="ii-logo">{icon("layers", 21)}</div>'
         "<div>"
         f'<div class="ii-brand-name">{escape(APP_NAME)}</div>'
-        f'<div class="ii-brand-sub">{escape(t(APP_TAGLINE))}</div>'
+        # The tagline is deliberately untranslated, so it stays English even
+        # when the interface is Turkish. ``lang="en"`` keeps the stylesheet's
+        # ``text-transform: uppercase`` on Latin casing rules instead of
+        # turning "Material Planning" into "MATERİAL PLANNİNG".
+        f'<div class="ii-brand-sub" lang="en">{escape(t(APP_TAGLINE))}</div>'
         "</div>"
         "</div>"
     )
