@@ -11,6 +11,7 @@ from streamlit.testing.v1 import AppTest
 from config import DEMO_FILE, DEMO_SOURCE
 from core.validation import validate_excel_file
 from utils.i18n import (
+    LANGUAGE_WIDGET_KEY,
     format_date,
     format_days,
     format_decimal,
@@ -75,9 +76,13 @@ def _open_on(page: str, dataset) -> AppTest:
 
 
 def _switch_language(app: AppTest, label: str) -> AppTest:
-    """Pick a language the way the sidebar selectbox does."""
+    """Pick a language the way the sidebar selectbox does.
 
-    app.selectbox[0].set_value(label)
+    The widget is addressed by key: the welcome screen also renders scenario
+    selectboxes, so a positional index would be fragile.
+    """
+
+    app.selectbox(key=LANGUAGE_WIDGET_KEY).set_value(label)
     _run(app)
     return app
 
@@ -234,3 +239,43 @@ def test_all_screens_render_in_both_languages(demo_dataset):
             run_exceptions = list(app.exception)
             assert not run_exceptions, f"{english}/{label}: {run_exceptions}"
             assert expected in _markdown(app), f"{english}/{label}: title missing"
+
+
+# ---------------------------------------------------------------------------
+# Document language: locale-aware CSS upper-casing
+# ---------------------------------------------------------------------------
+
+
+def test_document_language_is_synced_to_the_active_language():
+    """The app must tell the browser which language the text is in.
+
+    Eyebrows, badges and KPI labels are upper-cased with CSS. CSS upper-casing
+    follows the element language, and Streamlit hard-codes ``lang="en"``, which
+    turned Turkish ``Örnek Veri`` into ``ÖRNEK VERI`` instead of ``ÖRNEK VERİ``.
+    The fix sets ``<html lang>`` from a script-only iframe, so the assertion here
+    is that the helper is emitted and carries the active language.
+    """
+
+    app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+    assert not app.exception
+
+    english_frames = [element.proto.srcdoc for element in app.get("iframe")]
+    assert any("documentElement" in frame for frame in english_frames)
+    assert any('setAttribute("lang", "en")' in frame for frame in english_frames)
+
+    _switch_language(app, "Türkçe")
+
+    assert not app.exception
+    turkish_frames = [element.proto.srcdoc for element in app.get("iframe")]
+    assert any('setAttribute("lang", "tr")' in frame for frame in turkish_frames)
+    assert not any('setAttribute("lang", "en")' in frame for frame in turkish_frames)
+
+
+def test_language_sync_never_breaks_the_welcome_screen():
+    """The helper is a side effect; it must not raise or hide the UI."""
+
+    app = AppTest.from_file(APP_PATH, default_timeout=60).run()
+    _switch_language(app, "Türkçe")
+
+    assert not list(app.exception)
+    assert "Hızlı Başlangıç ve Örnek Veri" in _markdown(app)

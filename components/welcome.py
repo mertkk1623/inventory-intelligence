@@ -19,9 +19,10 @@ from html import escape
 import streamlit as st
 
 from ai.settings import load_settings
+from components.quick_start import render_quick_start
 from components.ui import icon, section_header
 from components.validation_report import render_validation_result
-from config import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE_MB, TEMPLATE_FILE
+from config import ALLOWED_EXTENSIONS, MAX_UPLOAD_SIZE_MB
 from core.schema import SHEET_SPECS
 from utils.data_loader import load_demo_dataset, load_uploaded_dataset
 from utils.i18n import t
@@ -144,6 +145,27 @@ def render_welcome() -> None:
 
     st.markdown(_hero_html(), unsafe_allow_html=True)
 
+    # Quick Start is the first actionable block: it lets a visitor run the app
+    # and the AI layer in one click, and it sits directly above the upload area.
+    render_quick_start()
+
+    st.markdown(
+        section_header(
+            t("Get Started"),
+            t("Choose how you want to begin"),
+            t(
+                "Upload your own workbook, or load the bundled demo workbook to "
+                "compare it with the sample scenarios above."
+            ),
+        ),
+        unsafe_allow_html=True,
+    )
+    _render_upload_cards()
+
+    demo_error = st.session_state.get(_DEMO_ERROR_KEY)
+    if demo_error is not None:
+        render_validation_result(demo_error)
+
     st.markdown(
         section_header(
             t("How It Works"),
@@ -156,23 +178,6 @@ def render_welcome() -> None:
         unsafe_allow_html=True,
     )
     st.markdown(_steps_html(), unsafe_allow_html=True)
-
-    st.markdown(
-        section_header(
-            t("Get Started"),
-            t("Choose how you want to begin"),
-            t(
-                "Download the template, explore a realistic demo, or upload your "
-                "own workbook."
-            ),
-        ),
-        unsafe_allow_html=True,
-    )
-    _render_action_cards()
-
-    demo_error = st.session_state.get(_DEMO_ERROR_KEY)
-    if demo_error is not None:
-        render_validation_result(demo_error)
 
     st.markdown(
         section_header(
@@ -238,41 +243,15 @@ def render_welcome() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _render_action_cards() -> None:
-    download_column, demo_column, upload_column = st.columns(3, gap="large")
+def _render_upload_cards() -> None:
+    """Render the bundled demo loader and the real upload area.
 
-    with download_column:
-        with st.container(border=True):
-            st.markdown(
-                f'<div class="ii-action-icon blue">{icon("download", 20)}</div>'
-                f'<div class="ii-action-title">{escape(t("Download Excel Template"))}</div>'
-                '<p class="ii-action-text">'
-                f"{escape(t('Get the ready-to-use workbook with all three sheets, exact column names and an empty product row.'))}"
-                "</p>",
-                unsafe_allow_html=True,
-            )
-            template_bytes = _read_template_bytes()
-            if template_bytes is None:
-                st.error(
-                    t(
-                        "The Excel template could not be found. Restore the "
-                        "templates folder and reload the app."
-                    )
-                )
-            else:
-                st.download_button(
-                    t("Download Template"),
-                    data=template_bytes,
-                    file_name=TEMPLATE_FILE.name,
-                    mime=(
-                        "application/vnd.openxmlformats-officedocument."
-                        "spreadsheetml.sheet"
-                    ),
-                    type="primary",
-                    width="stretch",
-                    icon=":material/download:",
-                    key="download_template",
-                )
+    Template and sample downloads live in the Quick Start panel above, so this
+    section stays focused on the two remaining entry points: the bundled demo
+    workbook and the user's own file.
+    """
+
+    demo_column, upload_column = st.columns(2, gap="large")
 
     with demo_column:
         with st.container(border=True):
@@ -347,13 +326,6 @@ def _handle_upload(uploaded_file) -> None:
     result = st.session_state.get(UPLOAD_RESULT_KEY)
     if result is not None and not result.is_valid:
         render_validation_result(result)
-
-
-def _read_template_bytes() -> bytes | None:
-    try:
-        return TEMPLATE_FILE.read_bytes()
-    except OSError:
-        return None
 
 
 def _hero_html() -> str:
@@ -503,7 +475,7 @@ def _status_html() -> str:
         (t("Version"), t(APP_VERSION_LABEL)),
         (t("Project Status"), t(APP_STATUS_LABEL)),
         (t("Completed packages"), "5 / 5"),
-        (t("Automated tests"), "190"),
+        (t("Automated tests"), "233"),
         (t("Screens"), "7"),
         (t("Interface languages"), "English · Türkçe"),
     )

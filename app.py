@@ -13,7 +13,7 @@ from components.replenishment import render_replenishment
 from components.reports import render_reports
 from components.sidebar import render_sidebar
 from components.stock_analysis import render_stock_analysis
-from components.styles import inject_global_styles
+from components.styles import inject_global_styles, sync_document_language
 from components.welcome import render_welcome
 from config import APP_NAME, APP_TAGLINE, PAGE_ICON
 from utils.calculation import get_calculation
@@ -47,6 +47,9 @@ inject_global_styles()
 
 def _run_app() -> None:
     page = render_sidebar()
+    # The sidebar resolves the language for this run, so the document language
+    # is synced afterwards: it drives locale-aware CSS upper-casing.
+    sync_document_language()
     dataset = get_dataset()
 
     if dataset is None or page == PAGE_WELCOME:

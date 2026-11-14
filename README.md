@@ -10,7 +10,7 @@
 [![Plotly](https://img.shields.io/badge/Plotly-5.24%2B-3F4F75?style=flat-square&logo=plotly&logoColor=white)](https://plotly.com/)
 [![ReportLab](https://img.shields.io/badge/ReportLab-4.2%2B-red?style=flat-square)](https://www.reportlab.com/)
 [![CI](https://img.shields.io/badge/CI-passing-brightgreen?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/mertkk1623/inventory-intelligence/actions)
-[![Tests](https://img.shields.io/badge/tests-190%20passing-brightgreen?style=flat-square)](https://github.com/mertkk1623/inventory-intelligence/actions)
+[![Tests](https://img.shields.io/badge/tests-233%20passing-brightgreen?style=flat-square)](https://github.com/mertkk1623/inventory-intelligence/actions)
 [![Lint](https://img.shields.io/badge/lint-Ruff%20clean-blue?style=flat-square)](https://docs.astral.sh/ruff/)
 [![License](https://img.shields.io/badge/status-V1%20complete-0F172A?style=flat-square)](#)
 
@@ -276,6 +276,35 @@ exact names and columns.
 The bundled demo workbook is synthetic and exists only to make the application
 explorable without preparing data. It is labelled as demo data in the interface
 and never mixes with an uploaded workbook.
+
+### Quick Start & sample scenarios
+
+The Getting Started screen opens with a **Quick Start & Demo Data** panel that
+removes the need to prepare a file at all:
+
+| Action | What it does |
+| --- | --- |
+| **🚀 Run the AI demo now** | Generates the selected scenario, validates it through the real engine and opens the dashboard immediately. Nothing is downloaded or uploaded. |
+| **📥 Download blank template** | An empty workbook with the exact sheets and column headers, a `Read Me` guide explaining every column and format rule, and an `IN`/`OUT` dropdown on `Transaction Type`. |
+| **📊 Download sample data** | The same populated workbook the button above activates, as an `.xlsx` file. It can be inspected, edited and re-uploaded through the normal upload path. |
+
+Four single-SKU scenarios are curated so that the deterministic engine — and
+therefore the AI layer — has something specific to explain:
+
+| Scenario | SKU | Signal it demonstrates |
+| --- | --- | --- |
+| **Stockout risk** | `SKU-IND-1042` | Seasonal demand ramp, stock below safety stock, position under the reorder point, one overdue purchase order. |
+| **Dead stock** | `SKU-LEG-2087` | ~4,500 units of idle capital, days of supply in the thousands, no reorder. |
+| **Negative stock** | `SKU-PRJ-7001` | A bulk shipment picked before its receipt; the running balance drops to −306 and recovers. |
+| **Fast mover** | `SKU-FST-5001` | High steady velocity with healthy cover above the reorder point. |
+
+Each scenario is deliberately single-SKU because V1 plans one product at a
+time: the four scenarios contrast **turnover velocity** rather than claiming a
+multi-SKU ABC classification, which belongs to V2.
+
+All generated files come from `core/schema.py`, so headers can never drift from
+the validator contract, and dates are anchored to the day the workbook is
+generated — a scenario never expires and is always treated as a current report.
 
 ---
 
@@ -592,7 +621,9 @@ inventory-intelligence/
 ├── ai/                       Optional AI layer (client, prompts, schemas, cache)
 ├── reports/                  Excel and PDF builders plus PDF theme/charts
 ├── components/               Screens, charts, sidebar, styles, UI helpers
+│   └── quick_start.py         Quick Start & Demo Data panel
 ├── utils/                    i18n, session state, data loading, calculation cache
+│   └── sample_data.py         Blank template and the four demo scenarios
 ├── templates/                Excel template and synthetic demo workbook
 ├── docs/screenshots/         Product screenshots used by this README
 └── tests/                    pytest suite
@@ -613,7 +644,7 @@ likewise session-scoped.
 
 | Item | Result |
 | --- | --- |
-| Automated tests | **190**, across 7 modules |
+| Automated tests | **233**, across 8 modules |
 | Verified Python | 3.11, 3.12, 3.13 |
 | Verified Streamlit | 1.53, 1.67 |
 | Lint | Ruff, clean |
@@ -624,17 +655,19 @@ likewise session-scoped.
 | Module | Tests |
 | --- | --- |
 | `test_ai.py` | 77 |
+| `test_sample_data.py` | 43 |
 | `test_dashboard.py` | 29 |
 | `test_reports.py` | 29 |
 | `test_excel_validation.py` | 21 |
 | `test_calculations.py` | 20 |
 | `test_i18n.py` | 12 |
 | `test_app.py` | 2 |
-| **Total** | **190** |
+| **Total** | **233** |
 
 The suite covers the Excel contract and its rejection paths, every calculation
 formula, report generation, the AI schema validation and caching rules, bilingual
-rendering, and the Streamlit app shell via `AppTest`.
+rendering, the generated template and demo scenarios, and the Streamlit app shell
+via `AppTest`.
 
 ### Continuous integration
 

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import streamlit as st
 
+from utils.i18n import get_language
+
 _CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -62,6 +64,15 @@ header[data-testid="stHeader"] {
 h1, h2, h3, h4 {
     color: var(--ii-text);
     letter-spacing: -0.025em;
+}
+
+/* The language-sync helper is a one-pixel, script-only iframe. Keep it from
+   ever painting a border, background or scrollbar. */
+iframe[data-testid="stIFrame"][height="1"],
+[data-testid="stAppIframeResizerAnchor"] {
+    border: 0 !important;
+    background: transparent !important;
+    overflow: hidden !important;
 }
 
 /* ------------------------------------------------------------------ */
@@ -1650,6 +1661,80 @@ div[data-testid="stVerticalBlock"]:has(.ii-action-icon):not(
 }
 
 /* ------------------------------------------------------------------ */
+/* Quick Start and demo data                                           */
+/* ------------------------------------------------------------------ */
+
+.ii-scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 0 18px;
+}
+
+.ii-scenario-card {
+    background: #F8FAFC;
+    border: 1px solid var(--ii-border);
+    border-radius: 10px;
+    padding: 12px 13px;
+}
+
+.ii-scenario-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.ii-scenario-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ii-text);
+}
+
+.ii-scenario-code {
+    flex: 0 0 auto;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #94A3B8;
+    white-space: nowrap;
+}
+
+.ii-scenario-text {
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--ii-muted);
+}
+
+.ii-demo-notes {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+}
+
+.ii-demo-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 11.5px;
+    line-height: 1.55;
+    color: #1E40AF;
+}
+
+.ii-demo-note svg {
+    flex: 0 0 14px;
+    margin-top: 2px;
+    color: var(--ii-primary);
+}
+
+/* ------------------------------------------------------------------ */
 /* Responsive                                                          */
 /* ------------------------------------------------------------------ */
 
@@ -1684,6 +1769,10 @@ div[data-testid="stVerticalBlock"]:has(.ii-action-icon):not(
     .ii-sheet-grid,
     .ii-detail-grid {
         grid-template-columns: 1fr;
+    }
+
+    .ii-scenario-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .ii-metrics {
@@ -1722,6 +1811,7 @@ div[data-testid="stVerticalBlock"]:has(.ii-action-icon):not(
     .ii-steps,
     .ii-rules,
     .ii-road,
+    .ii-scenario-grid,
     .ii-metrics {
         grid-template-columns: 1fr;
     }
@@ -1743,3 +1833,49 @@ def inject_global_styles() -> None:
     """Inject the shared stylesheet once per script run."""
 
     st.markdown(_CSS, unsafe_allow_html=True)
+
+
+def sync_document_language() -> None:
+    """Mirror the active language onto ``<html lang>``.
+
+    Several design-system labels are rendered with ``text-transform: uppercase``
+    (eyebrows, badges, KPI labels). CSS upper-casing is locale-sensitive: it uses
+    the element's language, which Streamlit hard-codes to ``lang="en"`` on the
+    document element. In English that is harmless, but Turkish has a dotted and a
+    dotless i, so ``Örnek Veri`` was displayed as ``ÖRNEK VERI`` instead of
+    ``ÖRNEK VERİ``.
+
+    The fix is to keep the design exactly as it is and tell the browser which
+    language the text is actually in. Setting ``document.documentElement.lang``
+    makes every existing ``text-transform: uppercase`` rule apply Turkish casing
+    rules, so no selector has to be touched and the English rendering is
+    unchanged (``en`` and ``tr`` differ only for i/ı).
+
+    Streamlit renders HTML through React, which drops ``<script>`` tags injected
+    via ``st.markdown``/``st.html``, so the attribute is set from a one-pixel,
+    same-origin iframe that reaches into the parent document. The iframe is used
+    only for this side effect and renders no visible content.
+
+    ``st.iframe`` rejects a height of ``0``, so the smallest accepted value is
+    used; the element carries no border or background, which keeps it invisible.
+    """
+
+    import streamlit as st
+
+    language = get_language()
+    st.iframe(
+        f"""<script>
+        (function () {{
+            try {{
+                var doc = window.parent.document;
+                if (doc.documentElement.getAttribute("lang") !== "{language}") {{
+                    doc.documentElement.setAttribute("lang", "{language}");
+                }}
+            }} catch (error) {{
+                /* The parent is cross-origin in some deployments; the UI must
+                   never break just because the attribute could not be set. */
+            }}
+        }})();
+        </script>""",
+        height=1,
+    )

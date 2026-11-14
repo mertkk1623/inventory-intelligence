@@ -10,7 +10,7 @@
 [![Plotly](https://img.shields.io/badge/Plotly-5.24%2B-3F4F75?style=flat-square&logo=plotly&logoColor=white)](https://plotly.com/)
 [![ReportLab](https://img.shields.io/badge/ReportLab-4.2%2B-red?style=flat-square)](https://www.reportlab.com/)
 [![CI](https://img.shields.io/badge/CI-passing-brightgreen?style=flat-square&logo=githubactions&logoColor=white)](https://github.com/mertkk1623/inventory-intelligence/actions)
-[![Tests](https://img.shields.io/badge/tests-190%20passing-brightgreen?style=flat-square)](https://github.com/mertkk1623/inventory-intelligence/actions)
+[![Tests](https://img.shields.io/badge/tests-233%20passing-brightgreen?style=flat-square)](https://github.com/mertkk1623/inventory-intelligence/actions)
 [![Lint](https://img.shields.io/badge/lint-Ruff%20clean-blue?style=flat-square)](https://docs.astral.sh/ruff/)
 [![License](https://img.shields.io/badge/status-V1%20complete-0F172A?style=flat-square)](#)
 
@@ -273,6 +273,36 @@ adları ile sütunları aşağıdaki gibi olmalıdır.
 Paketle gelen demo çalışma kitabı sentetiktir ve yalnızca uygulamanın veri
 hazırlamadan keşfedilebilmesi için vardır. Arayüzde demo verisi olarak etiketlenir
 ve yüklenen bir çalışma kitabıyla asla karışmaz.
+
+### Hızlı başlangıç ve örnek senaryolar
+
+Başlangıç ekranı, hiç dosya hazırlamadan başlamayı sağlayan bir **Hızlı Başlangıç
+ve Örnek Veri** paneliyle açılır:
+
+| Eylem | Ne yapar |
+| --- | --- |
+| **🚀 AI demosunu hemen çalıştır** | Seçilen senaryoyu üretir, gerçek doğrulama motorundan geçirir ve paneli hemen açar. İndirme veya yükleme yoktur. |
+| **📥 Boş şablonu indir** | Tam olarak gerekli sayfaları ve sütun başlıklarını içeren boş bir çalışma kitabı; her sütunu ve biçim kuralını açıklayan bir `Read Me` sayfası ve `Transaction Type` için `IN`/`OUT` açılır listesi. |
+| **📊 Örnek veriyi indir** | Yukarıdaki düğmenin etkinleştirdiği aynı doldurulmuş çalışma kitabını `.xlsx` olarak verir. İncelenebilir, düzenlenebilir ve normal yükleme akışından yeniden yüklenebilir. |
+
+Deterministik motorun — dolayısıyla AI katmanının — açıklayacak somut bir şey
+bulması için dört adet tek SKU'lu senaryo hazırlanmıştır:
+
+| Senaryo | SKU | Gösterdiği sinyal |
+| --- | --- | --- |
+| **Stok tükenme riski** | `SKU-IND-1042` | Mevsimsel talep artışı, güvenlik stoğunun altında stok, yeniden sipariş noktasının altında pozisyon, gecikmiş bir satın alma siparişi. |
+| **Ölü stok** | `SKU-LEG-2087` | Yaklaşık 4.500 birim atıl sermaye, binlerce güne ulaşan stokta kalma süresi, yeniden sipariş yok. |
+| **Negatif stok** | `SKU-PRJ-7001` | Girişi işlenmeden toplanan toplu sevkiyat; yürüyen bakiye −306'ya düşüp toparlanıyor. |
+| **Hızlı devirli ürün** | `SKU-FST-5001` | Yüksek ve istikrarlı devir hızı, yeniden sipariş noktasının üzerinde sağlıklı stok. |
+
+V1 aynı anda tek ürün planladığı için her senaryo tek SKU'ludur: dört senaryo,
+çok SKU'lu bir ABC sınıflandırması iddia etmek yerine **devir hızını**
+karşılaştırır; ABC analizi V2 kapsamındadır.
+
+Üretilen tüm dosyalar `core/schema.py` üzerinden oluşturulur, böylece başlıklar
+doğrulayıcı sözleşmesinden asla sapmaz ve tarihler çalışma kitabının üretildiği
+güne sabitlenir — bir senaryo hiçbir zaman eskimez ve her zaman *güncel* bir
+rapor olarak değerlendirilir.
 
 ---
 
@@ -590,7 +620,9 @@ inventory-intelligence/
 ├── ai/                       İsteğe bağlı AI katmanı (client, prompts, schemas, cache)
 ├── reports/                  Excel ve PDF üreticileri, PDF tema/grafikleri
 ├── components/               Ekranlar, grafikler, kenar çubuğu, stiller, UI yardımcıları
+│   └── quick_start.py        Hızlı Başlangıç ve Örnek Veri paneli
 ├── utils/                    i18n, session state, veri yükleme, hesaplama önbelleği
+│   └── sample_data.py        Boş şablon ve dört demo senaryosu
 ├── templates/                Excel şablonu ve sentetik demo çalışma kitabı
 ├── docs/screenshots/         Bu README'de kullanılan ürün ekran görüntüleri
 └── tests/                    pytest paketi
@@ -611,7 +643,7 @@ paylaşmaz. Dil seçimi de aynı şekilde oturuma bağlıdır.
 
 | Öğe | Sonuç |
 | --- | --- |
-| Otomatik testler | **190**, 7 modülde |
+| Otomatik testler | **233**, 8 modülde |
 | Doğrulanan Python | 3.11, 3.12, 3.13 |
 | Doğrulanan Streamlit | 1.53, 1.67 |
 | Lint | Ruff, temiz |
@@ -622,17 +654,19 @@ paylaşmaz. Dil seçimi de aynı şekilde oturuma bağlıdır.
 | Modül | Test |
 | --- | --- |
 | `test_ai.py` | 77 |
+| `test_sample_data.py` | 43 |
 | `test_dashboard.py` | 29 |
 | `test_reports.py` | 29 |
 | `test_excel_validation.py` | 21 |
 | `test_calculations.py` | 20 |
 | `test_i18n.py` | 12 |
 | `test_app.py` | 2 |
-| **Toplam** | **190** |
+| **Toplam** | **233** |
 
 Paket; Excel sözleşmesini ve reddetme yollarını, her hesaplama formülünü, rapor
 üretimini, AI şema doğrulaması ve önbellekleme kurallarını, iki dilli
-render'ı ve `AppTest` üzerinden Streamlit uygulama kabuğunu kapsar.
+render'ı, üretilen şablonu ve demo senaryolarını ve `AppTest` üzerinden Streamlit
+uygulama kabuğunu kapsar.
 
 ### Sürekli entegrasyon
 

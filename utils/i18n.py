@@ -487,21 +487,10 @@ _TRANSLATIONS: dict[str, str] = {
     # -- Welcome: Get started ---------------------------------------------
     "Get Started": "Başlayın",
     "Choose how you want to begin": "Nasıl başlamak istediğinizi seçin",
-    "Download the template, explore a realistic demo, or upload your own "
-    "workbook.": (
-        "Şablonu indirin, gerçekçi bir demoyu keşfedin veya kendi çalışma "
-        "kitabınızı yükleyin."
-    ),
-    "Get the ready-to-use workbook with all three sheets, exact column names "
-    "and an empty product row.": (
-        "Üç sayfanın tamamını, birebir kolon adlarını ve boş bir ürün satırını "
-        "içeren kullanıma hazır çalışma kitabını indirin."
-    ),
-    "Download Template": "Şablonu İndir",
-    "The Excel template could not be found. Restore the templates folder and "
-    "reload the app.": (
-        "Excel şablonu bulunamadı. templates klasörünü geri yükleyip "
-        "uygulamayı yeniden yükleyin."
+    "Upload your own workbook, or load the bundled demo workbook to compare "
+    "it with the sample scenarios above.": (
+        "Kendi çalışma kitabınızı yükleyin veya paketle gelen demo çalışma "
+        "kitabını yükleyerek yukarıdaki örnek senaryolarla karşılaştırın."
     ),
     "Try Demo Data": "Demo Verisini Dene",
     "Explore the workspace with a synthetic single-SKU dataset. Demo data is "
@@ -1331,6 +1320,115 @@ _TRANSLATIONS: dict[str, str] = {
     ),
     "Version and release state": "Sürüm ve yayın durumu",
     "What the validator enforces": "Doğrulayıcının uyguladığı kurallar",
+    # -- Quick Start and demo data -----------------------------------------
+    "Quick Start & Demo Data": "Hızlı Başlangıç ve Örnek Veri",
+    "Try the app and the AI without preparing a file": (
+        "Dosya hazırlamadan uygulamayı ve AI'yı deneyin"
+    ),
+    "Load a realistic dataset straight into the workspace, or download a "
+    "workbook to inspect and adapt. Nothing here touches your own files.": (
+        "Gerçekçi bir veri setini doğrudan çalışma alanına yükleyin veya "
+        "incelemek ve uyarlamak için bir çalışma kitabı indirin. Buradaki "
+        "hiçbir işlem kendi dosyalarınıza dokunmaz."
+    ),
+    "Run the AI demo": "AI demosunu çalıştır",
+    "Load a populated scenario and open the dashboard immediately. No "
+    "download, no upload.": (
+        "Doldurulmuş bir senaryoyu yükleyin ve paneli hemen açın. İndirme yok, "
+        "yükleme yok."
+    ),
+    "Demo scenario": "Demo senaryosu",
+    "🚀 Run the AI demo now": "🚀 AI demosunu hemen çalıştır",
+    "Generates the selected scenario, validates it and opens the Overview "
+    "Dashboard.": (
+        "Seçilen senaryoyu üretir, doğrular ve Genel Bakış Panelini açar."
+    ),
+    "Blank data template": "Boş veri şablonu",
+    "Start from a workbook with the exact required sheets and column headers, "
+    "plus a Read Me guide.": (
+        "Tam olarak gerekli sayfaları ve kolon başlıklarını içeren, ayrıca bir "
+        "Beni Oku kılavuzu bulunan bir çalışma kitabıyla başlayın."
+    ),
+    "📥 Download blank template": "📥 Boş şablonu indir",
+    "Empty sheets with the exact headers, a Read Me guide and a dropdown for "
+    "Transaction Type.": (
+        "Tam başlıklara sahip boş sayfalar, bir Beni Oku kılavuzu ve Hareket "
+        "Türü için açılır liste."
+    ),
+    "Populated sample file": "Doldurulmuş örnek dosya",
+    "Download the same dataset as an Excel file to inspect it, change it and "
+    "upload it again.": (
+        "Aynı veri setini Excel dosyası olarak indirip inceleyin, değiştirin ve "
+        "yeniden yükleyin."
+    ),
+    "File to download": "İndirilecek dosya",
+    "📊 Download sample data": "📊 Örnek veriyi indir",
+    "The downloaded file validates against the same rules as your own upload.": (
+        "İndirilen dosya, kendi yüklemenizle aynı kurallara göre doğrulanır."
+    ),
+    "Each scenario is built to trigger a different set of warnings.": (
+        "Her senaryo farklı bir uyarı kümesini tetikleyecek şekilde "
+        "oluşturulmuştur."
+    ),
+    "The blank template could not be generated.": (
+        "Boş şablon oluşturulamadı."
+    ),
+    "The sample workbook could not be generated.": (
+        "Örnek çalışma kitabı oluşturulamadı."
+    ),
+    "Dismiss": "Kapat",
+    "Stockout risk": "Stok tükenme riski",
+    "Dead stock": "Ölü stok",
+    "Fast mover": "Hızlı devirli ürün",
+    "Demand ramps up for a seasonal campaign while supply stays flat. Stock is "
+    "far below safety stock, the position is under the reorder point and one "
+    "purchase order is already overdue.": (
+        "Sezon kampanyası için talep artarken tedarik sabit kalıyor. Stok "
+        "güvenlik stoğunun çok altında, envanter pozisyonu yeniden sipariş "
+        "noktasının altında ve bir satın alma siparişi zaten gecikmiş durumda."
+    ),
+    "A legacy part with almost no demand for two months. Several thousand "
+    "units of working capital are tied up and days of supply runs into the "
+    "thousands.": (
+        "İki aydır neredeyse hiç talep görmeyen eski bir parça. Binlerce birim "
+        "işletme sermayesi bağlı ve stokta kalma süresi binlerce güne çıkıyor."
+    ),
+    "A bulk project shipment is picked before its confirming receipt is "
+    "posted. The running balance drops below zero and recovers, which exercises "
+    "the negative stock alert and the data-quality caveat.": (
+        "Toplu bir proje sevkiyatı, giriş kaydı işlenmeden önce toplanıyor. "
+        "Yürüyen bakiye sıfırın altına düşüp yeniden toparlanıyor; bu da negatif "
+        "stok uyarısını ve veri kalitesi uyarısını tetikliyor."
+    ),
+    "A high-velocity component with steady daily consumption, healthy cover "
+    "above the reorder point and one scheduled delivery. The contrast to dead "
+    "stock is what ABC classification would care about.": (
+        "Günlük tüketimi istikrarlı, yeniden sipariş noktasının üzerinde "
+        "sağlıklı bir stoğa ve planlanmış bir teslimata sahip hızlı devirli bir "
+        "bileşen. Ölü stokla oluşturduğu karşıtlık, ABC sınıflandırmasının "
+        "önemsediği ayrımdır."
+    ),
+    "The sample set ships one product per workbook, because V1 plans a single "
+    "SKU at a time. The four scenarios contrast turnover patterns: stockout "
+    "risk, dead stock, a negative balance and a fast mover.": (
+        "V1 aynı anda tek SKU planladığı için örnek set her çalışma kitabında "
+        "tek ürün içerir. Dört senaryo devir hızı desenlerini karşılaştırır: "
+        "stok tükenme riski, ölü stok, negatif bakiye ve hızlı devir."
+    ),
+    "Every AI feature is exercised: the inventory overview, findings, risks "
+    "and recommended actions, the consumption pattern analysis, the "
+    "replenishment explanation and the natural-language analyst.": (
+        "Her AI özelliği denenebilir: envanter özeti, bulgular, riskler ve "
+        "önerilen eylemler, tüketim deseni analizi, ikmal açıklaması ve doğal "
+        "dil analisti."
+    ),
+    "The deliberate outliers are real, not decoration: an overdue purchase "
+    "order, a bulk shipment picked before its receipt, a seasonal demand "
+    "surge and roughly 4,500 units of idle capital.": (
+        "Kasıtlı uç değerler süs değil, gerçektir: gecikmiş bir satın alma "
+        "siparişi, girişi işlenmeden toplanan toplu bir sevkiyat, mevsimsel bir "
+        "talep sıçraması ve yaklaşık 4.500 birim atıl sermaye."
+    ),
     "'{filename}' could not be read as an Excel workbook. Make sure the file is "
     "a valid .xlsx file and is not password protected.": (
         "'{filename}' bir Excel çalışma kitabı olarak okunamadı. Dosyanın "

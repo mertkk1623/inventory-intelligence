@@ -6,6 +6,16 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
+# Dataset provenance. ``config`` re-exports these so the UI has one source of
+# truth; the domain layer owns them because they describe domain data.
+DEMO_SOURCE = "demo"
+SAMPLE_SOURCE = "sample"
+UPLOAD_SOURCE = "upload"
+
+# Both the bundled workbook and the generated Quick Start scenarios are
+# synthetic and must be labelled as demo data in the interface.
+DEMO_SOURCES = (DEMO_SOURCE, SAMPLE_SOURCE)
+
 
 @dataclass(frozen=True)
 class ProductMaster:
@@ -52,7 +62,20 @@ class InventoryDataset:
 
     @property
     def is_demo(self) -> bool:
-        return self.source == "demo"
+        """True for any synthetic dataset shipped with the product.
+
+        Both the bundled demo workbook and the generated sample scenarios are
+        synthetic, so the UI labels them as demo data rather than as an
+        uploaded customer file.
+        """
+
+        return self.source in DEMO_SOURCES
+
+    @property
+    def is_sample(self) -> bool:
+        """True only for a generated Quick Start sample scenario."""
+
+        return self.source == SAMPLE_SOURCE
 
     @property
     def movement_count(self) -> int:
