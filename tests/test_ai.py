@@ -893,6 +893,19 @@ def test_ai_page_shows_question_ui_when_configured(demo_dataset, monkeypatch):
     assert app.text_input[0].placeholder == "Why is replenishment not required?"
 
 
+def _app_calculation(dataset, report_date):
+    """Rebuild the calculation exactly as the application does.
+
+    ``get_calculation`` calls ``calculate_inventory`` without a ``today``
+    argument, so the engine uses the real current date. Deriving the cache
+    fingerprint from a calculation that pins ``today`` would produce a different
+    ``is_historical_report`` flag (and therefore a different fingerprint) on any
+    day after the report date, which is what made these tests break each day.
+    """
+
+    return calculate_inventory(dataset, report_date)
+
+
 def test_ai_page_renders_cached_results_without_api_call(demo_dataset, demo_calculation, monkeypatch):
     """A cached valid answer must render fully and cost no request."""
 
@@ -907,7 +920,9 @@ def test_ai_page_renders_cached_results_without_api_call(demo_dataset, demo_calc
     )
 
     validated = validate_response(InventoryInsightResponse, INVENTORY_JSON)
-    fingerprint = context_fingerprint(demo_dataset, demo_calculation)
+    fingerprint = context_fingerprint(
+        demo_dataset, _app_calculation(demo_dataset, demo_calculation.report_date)
+    )
     cache = AICache()
     cache.put(AICache.make_key(fingerprint, OPERATION_INVENTORY), (validated, {}))
 
@@ -944,7 +959,9 @@ def test_ai_page_never_calls_api_on_rerun(demo_dataset, demo_calculation, monkey
     )
 
     validated = validate_response(ReplenishmentExplanation, REPLENISHMENT_JSON)
-    fingerprint = context_fingerprint(demo_dataset, demo_calculation)
+    fingerprint = context_fingerprint(
+        demo_dataset, _app_calculation(demo_dataset, demo_calculation.report_date)
+    )
     cache = AICache()
     cache.put(
         AICache.make_key(fingerprint, OPERATION_REPLENISHMENT), (validated, {})
