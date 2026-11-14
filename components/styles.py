@@ -66,9 +66,9 @@ h1, h2, h3, h4 {
     letter-spacing: -0.025em;
 }
 
-/* The language-sync helper is a one-pixel, script-only iframe. Keep it from
-   ever painting a border, background or scrollbar. */
-iframe[data-testid="stIFrame"][height="1"],
+/* The language-sync helper is a script-only iframe. Keep it from ever painting
+   a border, background or scrollbar, whichever rendering path is available. */
+iframe[data-testid="stIFrame"],
 [data-testid="stAppIframeResizerAnchor"] {
     border: 0 !important;
     background: transparent !important;
@@ -1852,30 +1852,53 @@ def sync_document_language() -> None:
     unchanged (``en`` and ``tr`` differ only for i/ı).
 
     Streamlit renders HTML through React, which drops ``<script>`` tags injected
-    via ``st.markdown``/``st.html``, so the attribute is set from a one-pixel,
+    via ``st.markdown``/``st.html``, so the attribute is set from a script-only,
     same-origin iframe that reaches into the parent document. The iframe is used
     only for this side effect and renders no visible content.
-
-    ``st.iframe`` rejects a height of ``0``, so the smallest accepted value is
-    used; the element carries no border or background, which keeps it invisible.
     """
 
-    import streamlit as st
+    _render_html_frame(_language_sync_script(get_language()))
 
-    language = get_language()
-    st.iframe(
-        f"""<script>
-        (function () {{
-            try {{
-                var doc = window.parent.document;
-                if (doc.documentElement.getAttribute("lang") !== "{language}") {{
-                    doc.documentElement.setAttribute("lang", "{language}");
-                }}
-            }} catch (error) {{
-                /* The parent is cross-origin in some deployments; the UI must
-                   never break just because the attribute could not be set. */
-            }}
-        }})();
-        </script>""",
-        height=1,
+
+def _language_sync_script(language: str) -> str:
+    """Return the script that mirrors ``language`` onto ``<html lang>``."""
+
+    return (
+        '<script>\n'
+        "    (function () {\n"
+        "        try {\n"
+        '            var doc = window.parent.document;\n'
+        f'            if (doc.documentElement.getAttribute("lang") !== "{language}") {{\n'
+        f'                doc.documentElement.setAttribute("lang", "{language}");\n'
+        "            }\n"
+        "        } catch (error) {\n"
+        "            /* The parent is cross-origin in some deployments; the UI must\n"
+        "               never break just because the attribute could not be set. */\n"
+        "        }\n"
+        "    })();\n"
+        "</script>"
     )
+
+
+def _render_html_frame(html: str) -> None:
+    """Render script-only HTML without depending on the Streamlit version.
+
+    ``st.iframe`` only exists from Streamlit 1.56 onwards. The project supports
+    ``streamlit>=1.53`` (verified on 1.53 and 1.67), so a deployment can resolve
+    an older release where calling ``st.iframe`` would raise ``AttributeError``.
+    Streamlit Cloud has also failed on this call, so the older, still-supported
+    ``st.components.v1.html`` is kept as a fallback.
+
+    Both paths are invisible: ``st.iframe`` rejects a height of ``0``, so the
+    smallest accepted value is used there, while the components API accepts
+    ``0``. The CSS layer also removes any border or background from the frame.
+    """
+
+    iframe = getattr(st, "iframe", None)
+    if callable(iframe):
+        iframe(html, height=1)
+        return
+
+    import streamlit.components.v1 as components  # noqa: PLC0415 - version fallback
+
+    components.html(html, height=0, scrolling=False)

@@ -279,3 +279,55 @@ def test_language_sync_never_breaks_the_welcome_screen():
 
     assert not list(app.exception)
     assert "Hızlı Başlangıç ve Örnek Veri" in _markdown(app)
+
+
+def test_language_sync_falls_back_when_st_iframe_is_unavailable(monkeypatch):
+    """``st.iframe`` only exists from Streamlit 1.56.
+
+    The project still supports ``streamlit>=1.53``, so a deployment can resolve a
+    release without ``st.iframe``. The helper must degrade to the older
+    components API instead of raising ``AttributeError`` and blanking the app.
+    """
+
+    from components import styles
+
+    rendered: list[tuple[str, dict]] = []
+
+    def fake_html(html: str, **kwargs: object) -> None:
+        rendered.append((html, kwargs))
+
+    monkeypatch.delattr(styles.st, "iframe", raising=False)
+    monkeypatch.setattr("streamlit.components.v1.html", fake_html)
+
+    styles.sync_document_language()
+
+    assert len(rendered) == 1
+    html, kwargs = rendered[0]
+    assert "documentElement" in html
+    # The components API accepts a genuinely invisible zero height.
+    assert kwargs["height"] == 0
+    assert kwargs["scrolling"] is False
+
+
+def test_language_sync_prefers_st_iframe_when_available(monkeypatch):
+    """When ``st.iframe`` exists it is used, because v1.html is deprecated."""
+
+    from components import styles
+
+    rendered: list[tuple[str, dict]] = []
+
+    def fake_iframe(html: str, **kwargs: object) -> None:
+        rendered.append((html, kwargs))
+
+    def forbidden_html(*args: object, **kwargs: object) -> None:
+        raise AssertionError("components.html must not be used when st.iframe exists")
+
+    monkeypatch.setattr(styles.st, "iframe", fake_iframe, raising=False)
+    monkeypatch.setattr("streamlit.components.v1.html", forbidden_html)
+
+    styles.sync_document_language()
+
+    assert len(rendered) == 1
+    html, kwargs = rendered[0]
+    assert "documentElement" in html
+    assert kwargs["height"] == 1
