@@ -39,7 +39,7 @@ st.set_page_config(
     page_title=f"{APP_NAME} · {APP_TAGLINE}",
     page_icon=PAGE_ICON,
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 inject_global_styles()

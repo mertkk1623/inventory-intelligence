@@ -49,7 +49,12 @@ header[data-testid="stHeader"] {
     visibility: hidden;
 }
 
-[data-testid="stToolbar"] {
+/* The toolbar itself must stay in the layout, because it holds Streamlit's
+   only "Expand sidebar" control once the sidebar is collapsed. Hiding the
+   whole toolbar locked the navigation away; only the surplus items are
+   hidden here so the original chrome stays clean. */
+[data-testid="stToolbarActions"],
+[data-testid="stAppDeployButton"] {
     display: none;
 }
 
